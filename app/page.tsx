@@ -14,31 +14,35 @@ export default function KoreanQuestionReader() {
   const [rate, setRate] = useState(1);
 
   useEffect(() => {
-    const loadVoices = () => {
-      const allVoices = window.speechSynthesis.getVoices();
-      // const koreanVoices = allVoices.filter((v) => v.lang.startsWith("ko"));
-      const koreanVoices = allVoices.filter(
-        (v) => v.lang.startsWith("ko") && v.localService
-      );
-      
-      setVoices(koreanVoices);
-      if (koreanVoices.length > 0) {
-        setSelectedVoice(koreanVoices[0]);
-      }
-    };
+    // Kiểm tra nếu đang chạy trên trình duyệt
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      const loadVoices = () => {
+        const allVoices = window.speechSynthesis.getVoices();
+        const koreanVoices = allVoices.filter(
+          (v) => v.lang.startsWith("ko") && v.localService
+        );
 
-    loadVoices();
-    if (speechSynthesis.onvoiceschanged !== undefined) {
-      speechSynthesis.onvoiceschanged = loadVoices;
+        setVoices(koreanVoices);
+        if (koreanVoices.length > 0) {
+          setSelectedVoice(koreanVoices[0]);
+        }
+      };
+
+      loadVoices();
+      if (speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = loadVoices;
+      }
     }
   }, []);
 
   const speakKorean = (text: string) => {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "ko-KR";
-    utterance.rate = rate;
-    if (selectedVoice) utterance.voice = selectedVoice;
-    window.speechSynthesis.speak(utterance);
+    if (typeof window !== "undefined" && window.speechSynthesis && selectedVoice) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "ko-KR";
+      utterance.rate = rate;
+      utterance.voice = selectedVoice;
+      window.speechSynthesis.speak(utterance);
+    }
   };
 
   const handleStart = () => {
